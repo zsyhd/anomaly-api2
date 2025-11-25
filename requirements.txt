@@ -1,0 +1,5 @@
+Flask
+fastapi
+uvicorn
+pandas
+requests
