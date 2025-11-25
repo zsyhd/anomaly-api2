@@ -1,10 +1,11 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 import json
+import os
 from collections import Counter
 
 app = FastAPI(title="Anomaly Pie Chart API")
 
-# Mapping class → (name, color)
 CLASS_MAP = {
     0: ("normal", "#4caf50"),
     1: ("flow instability", "#2196f3"),
@@ -17,20 +18,22 @@ CLASS_MAP = {
     8: ("flow rate", "#795548"),
 }
 
-# مسیر JSON تو
 JSON_PATH = "MData.json"
+
+@app.get("/")
+def root():
+    return {"message": "API is running. Visit /anomaly-stats"}
 
 @app.get("/anomaly-stats")
 def get_anomaly_stats():
-    # Read JSON file
+    if not os.path.exists(JSON_PATH):
+        return JSONResponse(status_code=500, content={"error": "MData.json not found."})
+
     with open(JSON_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Count classes
     class_counts = Counter(item["class"] for item in data)
 
-
-    # Build output
     items = []
     for cls, count in class_counts.items():
         name, color = CLASS_MAP.get(cls, ("unknown", "#000000"))
